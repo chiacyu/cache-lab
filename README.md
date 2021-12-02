@@ -5,20 +5,25 @@ In this project we would stimulate the behavior of cache in modern computers.
 
 
 - Before running the autograders, compile your code:
+
+```shell
     linux> make
+```
 
 - Check the correctness of your simulator:
+```shell
     linux> ./test-csim
-
+```
 - Check the correctness and performance of your transpose functions:
-
-    linux> ./test-trans -M 32 -N 32\
-    linux> ./test-trans -M 64 -N 64\
+```shell
+    linux> ./test-trans -M 32 -N 32
+    linux> ./test-trans -M 64 -N 64
     linux> ./test-trans -M 61 -N 67
-
+```
 - Check everything at once (this is the program that your instructor runs):
+```shell
     linux> ./driver.py    
-
+```
 ******
 Files:
 ******
