@@ -5,21 +5,73 @@
 #include <string.h>
 #include <unistd.h>
 
-
-int h,v,s,E,b,t,S;
-char *file_name;
-
 typedef struct{
     int valid_bit;
     int tag;
     int lru_counter;
 }cache_line;
 
-void cache_init(int S, int E, int b){
+int h,v,s,E,b,t,S;
+int hit_count;
+int miss_count;
+int eviction_count;
+char *file_name;
+cache_line ** Cache;
 
+void cache_init(int S, int E, cache_line **cache){
+    cache = (cache_line **)malloc(S * sizeof(cache_line *));
+    for(int i=0 ; i<S ; i++){
+        cache[i] = (cache_line *)malloc(E * sizeof(cache_line));
+        for(int j=0 ; j<E ; j++){
+            cache[i][j].lru_counter = 0;
+            cache[i][j].tag = 0;
+            cache[i][j].valid_bit = 0;
+        }
+    }
 }
 
+void memory_acess(unsigned int address){
 
+    int cache_set_index = (address >> b) & (-1u >> (64 - s));
+    int cache_tag_index = (address >> (b + s));
+
+    for(int i=0 ; i<E ; i++){
+
+        if( Cache[cache_set_index][i].tag == cache_tag_index ){
+            
+            hit_count+=1;
+            Cache[cache_set_index][i].lru_counter += 1;
+            return ;
+        } 
+    }
+
+    for(int i=0 ; i<E ; i++){
+
+        if(Cache[cache_set_index][i].valid_bit == 0){
+            Cache[cache_set_index][i].tag = cache_tag_index;
+            Cache[cache_set_index][i].valid_bit = 1;
+            Cache[cache_set_index][i].lru_counter += 1;
+            miss_count+=1;
+            return;
+        }
+    }
+    miss_count+=1;
+    eviction_count+=1;
+
+    int min_time_stamp = Cache[cache_set_index][0].lru_counter;
+    int eviction_index;
+
+    for (int i=0 ; i<E ; i++) {
+        if (Cache[cache_set_index][i].lru_counter < min_time_stamp) {
+            min_time_stamp = Cache[cache_set_index][i].lru_counter;
+            eviction_index = i;
+        }
+    }
+
+    Cache[cache_set_index][eviction_index].tag = cache_tag_index;
+    Cache[cache_set_index][eviction_index].lru_counter+=1;
+    return;
+}
 
 void command_parser(char *filename){
 
@@ -32,10 +84,27 @@ void command_parser(char *filename){
 
     while(fscanf(pfile," %c %x, %d",&identifier, &address, &size)>0)
     {
+        switch (identifier) {
+            
+            case 'L':
+                memory_acess(address);
+                break;
+            
+            case 'M':
+                memory_acess(address);
+
+            case 'S':
+                memory_acess(address);
+                break;
+
+            default:
+                break;
+        }
 
     }
 
 }
+
 
 void print_usage(){
     printf("Usage: ./csim-ref [-hv] -s <s> -E <E> -b <b> -t <tracefile>\n"
@@ -49,18 +118,9 @@ void print_usage(){
 }
 
 
-void memory_acess(unsigned long address){
-
-}
-
-
-
 
 int main(int argc, char *argv[])
 {
-    int hit_count;
-    int miss_count;
-    int eviction_count;
     int opt;
 
     while( (opt = getopt(argc, argv, "hv:s:E:b:t:")) != -1){
@@ -101,8 +161,10 @@ int main(int argc, char *argv[])
     }
 
     S = 1 << s;
-    
+    cache_init(S, E, Cache);
+    command_parser(file_name);
 
-    printSummary(hit_count, 0, 0);
+
+    printSummary(hit_count, miss_count, eviction_count);
     return 0;
 }
