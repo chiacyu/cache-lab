@@ -19,15 +19,58 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N]);
  *     searches for that string to identify the transpose function to
  *     be graded. 
  */
+void transpose_32(int M, int N, int A[N][M], int B[M][N]){
+     int i,j;
+     int r1,r2,r3,r4,r5,r6,r7,r8;
+     for(i=0 ; i<M ; i++){
+         for(j=0 ; j<N ; j+=8){
+
+             r1 = A[j][i];
+             r2 = A[j+1][i];
+             r3 = A[j+2][i];
+             r4 = A[j+3][i];
+             r5 = A[j+4][i];
+             r6 = A[j+5][i];
+             r7 = A[j+6][i];
+             r8 = A[j+7][i];
+
+             B[i][j] = r1;
+             B[i][j+1] = r2;
+             B[i][j+2] = r3;
+             B[i][j+3] = r4;
+             B[i][j+4] = r5;
+             B[i][j+5] = r6;
+             B[i][j+6] = r7;
+             B[i][j+7] = r8;
+         }
+     }
+ }
+
+
+
+
 char transpose_submit_desc[] = "Transpose submission";
 void transpose_submit(int M, int N, int A[N][M], int B[M][N])
 {
+    int i,j;
+    int r1,r2,r3,r4,r5,r6,r7,r8;
+
+    if( M == 32){
+        transpose_32(M, N, A, B);
+    }
+    else if( M == 64){
+        transpose_32(M, N, A, B);
+    }
+    else{
+
+    }
 }
 
 /* 
  * You can define additional transpose functions below. We've defined
  * a simple one below to help you get started. 
  */ 
+
 
 /* 
  * trans - A simple baseline transpose function, not optimized for the cache.
